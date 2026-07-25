@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: extract-tool
+  datasource:
+    # brew 安装的 MySQL 默认 root 无密码; 若你的环境不同请修改
+    url: jdbc:mysql://localhost:3306/text_extract_tool?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      # 表结构由 init.sql 创建并管理; 不让 Hibernate 校验/改动, 避免 char/varchar 等 MySQL 类型映射差异
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# 文本提取相关配置
+app:
+  extract:
+    # 提取文本的最大字符数 (超出截断), 防止超大文件撑爆内存
+    max-text-length: 1000000
+  cors:
+    # 允许的前端来源 (Vue dev server), 多个用英文逗号分隔; @Value String[] 会按逗号拆分
+    allowed-origins: http://localhost:5173,http://127.0.0.1:5173
+  security:
+    # 允许读取的服务器根目录(绝对路径), 多个用英文逗号分隔; 文件的 canonical 路径必须位于某个根目录下, 防 ../ 与符号链接逃逸; 留空则禁用按路径提取
+    # 默认仅允许项目目录(含 sample/), 生产环境请改为受限目录
+    allowed-base-paths: /Users/pailchen/work/text-extract-tool
+    # 允许的文件扩展名(小写, 不含点), 逗号分隔; 仅这些后缀的文件允许处理
+    allowed-extensions: pdf,doc,docx,txt,html,htm,rtf,md,xls,xlsx,ppt,pptx,odt,csv,xml
+    # 单文件最大字节数 (服务器路径与上传均生效)
+    max-file-size-bytes: 104857600
+    rate-limit:
+      # 是否启用接口限流 (按 IP 固定窗口)
+      enabled: true
+      # 单 IP 每分钟允许的请求数
+      requests-per-minute: 60
+
+logging:
+  level:
+    com.example.extracttool: INFO

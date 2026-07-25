@@ -1,0 +1,32 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Java / Maven
+backend/target/
+*.class
+*.jar
+*.war
+hs_err_pid*
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+*.local
+npm-debug.log*
+
+# Logs
+logs/
+*.log
+
+# Env / secrets
+.env
+.env.*
+*.pem
+*.key
