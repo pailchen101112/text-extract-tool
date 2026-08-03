@@ -46,6 +46,12 @@ export APP_TRUST_FORWARDED_FOR='false'
 
 如 MySQL 账号不同，请修改 `backend/src/main/resources/application.yml` 或使用部署平台的配置覆盖机制。
 
+## 部署与启动手册
+
+- [VS Code 本地开发与调试](docs/STARTUP_VSCODE.md)
+- [Linux 服务器生产部署](docs/DEPLOYMENT_LINUX.md)
+- [应用安全基线与等保三级上线清单](docs/SECURITY_BASELINE.md)
+
 ## 菜单结构
 
 ```text
