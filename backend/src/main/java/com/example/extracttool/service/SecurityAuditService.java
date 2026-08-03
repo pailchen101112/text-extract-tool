@@ -10,6 +10,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Service
 public class SecurityAuditService {
     private static final Logger AUDIT = LoggerFactory.getLogger("SECURITY_AUDIT");
+    private final ClientIpService clientIpService;
+
+    public SecurityAuditService(ClientIpService clientIpService) {
+        this.clientIpService = clientIpService;
+    }
 
     public void record(String event, String username, String clientIp, String result, String detail) {
         AUDIT.info("event={} username={} clientIp={} result={} detail={}", clean(event), clean(username),
@@ -20,7 +25,7 @@ public class SecurityAuditService {
         String username = SecurityContextHolder.getContext().getAuthentication() == null ? "-"
                 : SecurityContextHolder.getContext().getAuthentication().getName();
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        String ip = attrs == null ? "-" : attrs.getRequest().getRemoteAddr();
+        String ip = attrs == null ? "-" : clientIpService.resolve(attrs.getRequest());
         record(event, username, ip, "SUCCESS", detail);
     }
 

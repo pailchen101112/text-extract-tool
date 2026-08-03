@@ -39,6 +39,8 @@ app:
     allowed-extensions: pdf,doc,docx,txt,html,htm,rtf,md,xls,xlsx,ppt,pptx,odt,csv,xml
     # 单文件最大字节数 (服务器路径与上传均生效)
     max-file-size-bytes: 104857600
+    # 仅当应用位于会清洗 X-Forwarded-For 的可信反向代理后方时启用
+    trust-forwarded-for: ${APP_TRUST_FORWARDED_FOR:false}
     rate-limit:
       # 是否启用接口限流 (按 IP 固定窗口)
       enabled: true
@@ -46,7 +48,7 @@ app:
       requests-per-minute: 60
   auth:
     # 生产环境必须通过 APP_JWT_SECRET 注入至少 32 字节的随机密钥
-    jwt-secret: ${APP_JWT_SECRET:dev-only-change-this-jwt-secret-32bytes-minimum}
+    jwt-secret: ${APP_JWT_SECRET:}
     token-expiration-minutes: 30
     max-failed-attempts: 5
     lock-minutes: 30

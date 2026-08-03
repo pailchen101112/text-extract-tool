@@ -24,6 +24,7 @@
 mysql -u root < init.sql
 
 cd backend
+export APP_JWT_SECRET="$(openssl rand -base64 48)"
 mvn clean package
 java -jar target/extract-tool-1.0.0.jar
 
@@ -35,11 +36,12 @@ npm run dev
 
 访问 `http://localhost:5173`。
 
-初始账号：`admin` / `Admin@123456`。首次登录必须修改密码。生产环境启用前，应同时替换初始密码与 JWT 密钥。
+初始账号：`admin` / `Admin@123456`。首次登录必须修改密码。应用未配置至少 32 字节的 `APP_JWT_SECRET` 时会拒绝启动，避免误用公开默认密钥。
 
 ```bash
 export APP_JWT_SECRET='至少32字节的高熵随机字符串'
 export APP_ALLOWED_BASE_PATHS='/data/approved-documents'
+export APP_TRUST_FORWARDED_FOR='false'
 ```
 
 如 MySQL 账号不同，请修改 `backend/src/main/resources/application.yml` 或使用部署平台的配置覆盖机制。

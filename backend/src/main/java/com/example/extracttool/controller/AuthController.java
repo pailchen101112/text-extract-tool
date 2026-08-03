@@ -3,6 +3,7 @@ package com.example.extracttool.controller;
 import com.example.extracttool.dto.ChangePasswordRequest;
 import com.example.extracttool.dto.LoginRequest;
 import com.example.extracttool.service.AuthService;
+import com.example.extracttool.service.ClientIpService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,11 +16,15 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
-    public AuthController(AuthService authService) { this.authService = authService; }
+    private final ClientIpService clientIpService;
+    public AuthController(AuthService authService, ClientIpService clientIpService) {
+        this.authService = authService;
+        this.clientIpService = clientIpService;
+    }
 
     @PostMapping("/login")
     public Map<String, Object> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-        return authService.login(request, clientIp(httpRequest));
+        return authService.login(request, clientIpService.resolve(httpRequest));
     }
 
     @GetMapping("/me")
@@ -28,12 +33,7 @@ public class AuthController {
     @PutMapping("/change-password")
     public ResponseEntity<Map<String, String>> changePassword(@Valid @RequestBody ChangePasswordRequest request,
                                                                HttpServletRequest httpRequest) {
-        authService.changePassword(request, clientIp(httpRequest));
+        authService.changePassword(request, clientIpService.resolve(httpRequest));
         return ResponseEntity.ok(Collections.singletonMap("message", "密码修改成功，请重新登录"));
-    }
-
-    private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        return forwarded == null || forwarded.trim().isEmpty() ? request.getRemoteAddr() : forwarded.split(",")[0].trim();
     }
 }

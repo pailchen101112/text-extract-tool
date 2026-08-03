@@ -8,5 +8,6 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, Long> {
     boolean existsByCode(String code);
     Optional<Company> findByCode(String code);
+    boolean existsByParentId(Long parentId);
     List<Company> findAllByOrderByNameAsc();
 }

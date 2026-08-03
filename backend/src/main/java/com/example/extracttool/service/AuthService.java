@@ -50,7 +50,7 @@ public class AuthService {
     @Transactional(noRollbackFor = LoginFailureException.class)
     public Map<String, Object> login(LoginRequest request, String clientIp) {
         String username = request.getUsername().trim();
-        Optional<SysUser> found = users.findByUsername(username);
+        Optional<SysUser> found = users.findForLogin(username);
         if (!found.isPresent()) {
             passwordEncoder.matches(request.getPassword(), "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxoOpK7r8VnQyJmHWVFN8cXJx9K");
             audit.record("LOGIN", username, clientIp, "DENIED", "bad_credentials");
@@ -60,11 +60,11 @@ public class AuthService {
         LocalDateTime now = LocalDateTime.now();
         if (!"ENABLED".equals(user.getStatus())) {
             audit.record("LOGIN", username, clientIp, "DENIED", "disabled");
-            throw new LoginFailureException("账号已停用");
+            throw new LoginFailureException("账号或密码错误");
         }
         if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(now)) {
             audit.record("LOGIN", username, clientIp, "DENIED", "locked");
-            throw new LoginFailureException("账号已锁定，请稍后重试");
+            throw new LoginFailureException("账号或密码错误");
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             int attempts = (user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts()) + 1;
@@ -72,7 +72,7 @@ public class AuthService {
             if (attempts >= maxFailedAttempts) user.setLockedUntil(now.plusMinutes(lockMinutes));
             users.save(user);
             audit.record("LOGIN", username, clientIp, "DENIED", "bad_credentials_attempt_" + attempts);
-            throw new LoginFailureException(attempts >= maxFailedAttempts ? "账号已锁定，请稍后重试" : "账号或密码错误");
+            throw new LoginFailureException("账号或密码错误");
         }
         user.setFailedLoginAttempts(0);
         user.setLockedUntil(null);
