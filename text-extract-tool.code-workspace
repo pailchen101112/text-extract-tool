@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"name": "text-extract-tool",
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "disabled"
+	}
+}

@@ -3,7 +3,7 @@
     <div class="login-visual">
       <div class="brand-mark">浙</div>
       <p class="eyebrow">TEXT INTELLIGENCE PLATFORM</p>
-      <h1>文澜智析</h1>
+      <h1>陈师傅工作台</h1>
       <p class="login-intro">安全、清晰地管理文档提取、组织权限与区域数据展示。</p>
       <div class="security-note"><span></span> 身份鉴别 · 最小权限 · 安全审计</div>
     </div>

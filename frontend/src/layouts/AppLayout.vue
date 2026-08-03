@@ -1,7 +1,7 @@
 <template>
   <el-container class="shell">
     <el-aside class="sidebar" width="248px">
-      <div class="sidebar-brand"><span>浙</span><div><strong>文澜智析</strong><small>安全管理平台</small></div></div>
+      <div class="sidebar-brand"><span>浙</span><div><strong>陈师傅工作台</strong><small>AI Native平台</small></div></div>
       <el-menu :default-active="route.path" router class="side-menu">
         <template v-for="item in menuTree" :key="item.id">
           <el-sub-menu v-if="item.children.length" :index="String(item.id)">
@@ -56,7 +56,7 @@ const passwordDialog = ref(false)
 const passwordLoading = ref(false)
 const passwordForm = reactive({ oldPassword: '', newPassword: '' })
 const flatMenus = computed(() => menuTree.value.flatMap((item) => [item, ...(item.children || [])]))
-const pageTitle = computed(() => flatMenus.value.find((item) => item.path === route.path)?.name || '文澜智析')
+const pageTitle = computed(() => flatMenus.value.find((item) => item.path === route.path)?.name || '陈师傅工作台')
 const initials = computed(() => (authState.user?.displayName || '用').slice(0, 1))
 
 const doLogout = async () => { logout(); await router.replace('/login') }
