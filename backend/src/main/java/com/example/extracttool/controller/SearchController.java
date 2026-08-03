@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/search")
@@ -20,6 +21,7 @@ public class SearchController {
 
     /** 判断多个文本(needles)是否在目标文本中 */
     @PostMapping("/match")
+    @PreAuthorize("@authz.has('attachment:search')")
     public SearchResponse match(@RequestBody SearchRequest request) {
         return searchService.match(request);
     }

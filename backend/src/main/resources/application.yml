@@ -34,7 +34,7 @@ app:
   security:
     # 允许读取的服务器根目录(绝对路径), 多个用英文逗号分隔; 文件的 canonical 路径必须位于某个根目录下, 防 ../ 与符号链接逃逸; 留空则禁用按路径提取
     # 默认仅允许项目目录(含 sample/), 生产环境请改为受限目录
-    allowed-base-paths: /Users/pailchen/work/text-extract-tool
+    allowed-base-paths: ${APP_ALLOWED_BASE_PATHS:/Users/pailchen/text-extract-tool}
     # 允许的文件扩展名(小写, 不含点), 逗号分隔; 仅这些后缀的文件允许处理
     allowed-extensions: pdf,doc,docx,txt,html,htm,rtf,md,xls,xlsx,ppt,pptx,odt,csv,xml
     # 单文件最大字节数 (服务器路径与上传均生效)
@@ -44,6 +44,13 @@ app:
       enabled: true
       # 单 IP 每分钟允许的请求数
       requests-per-minute: 60
+  auth:
+    # 生产环境必须通过 APP_JWT_SECRET 注入至少 32 字节的随机密钥
+    jwt-secret: ${APP_JWT_SECRET:dev-only-change-this-jwt-secret-32bytes-minimum}
+    token-expiration-minutes: 30
+    max-failed-attempts: 5
+    lock-minutes: 30
+    password-max-age-days: 90
 
 logging:
   level:

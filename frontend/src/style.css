@@ -1,54 +1,89 @@
-* {
-  box-sizing: border-box;
+:root {
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #14202b;
+  background: #eef3f5;
+  font-synthesis: none;
+  --ink: #14202b;
+  --muted: #75818b;
+  --teal: #0f7c79;
+  --line: #dfe7e9;
 }
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
-    'Microsoft YaHei', sans-serif;
-  background: #f5f7fa;
-}
-#app {
-  color: #303133;
-}
-.header {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  background: #fff;
-  border-bottom: 1px solid #ebeef5;
-}
-.header h1 {
-  font-size: 20px;
-  margin: 0;
-}
-.header .sub {
-  color: #909399;
-  font-size: 13px;
-}
-.tabs {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.panel {
-  width: 100%;
-}
-.row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-.row .el-button {
-  margin-left: auto;
-}
-.result {
-  margin-top: 16px;
-}
-.text-actions {
-  margin: 8px 0;
-  text-align: right;
-}
-.tip {
-  color: #909399;
-  font-size: 12px;
-}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 1180px; min-height: 100vh; background: #eef3f5; }
+button, input { font: inherit; }
+.eyebrow { margin: 0 0 6px; color: #2d8d88; font-size: 10px; font-weight: 800; letter-spacing: .18em; }
+.muted { color: var(--muted); }
+.shell { min-height: 100vh; }
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; display: flex; flex-direction: column; background: #0d1c25; color: #fff; }
+.sidebar-brand { display: flex; align-items: center; gap: 12px; height: 80px; padding: 0 24px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sidebar-brand > span { display: grid; place-items: center; width: 38px; height: 38px; background: #0f8e88; border-radius: 4px; font-family: Georgia, serif; font-size: 22px; }
+.sidebar-brand div { display: flex; flex-direction: column; gap: 3px; }
+.sidebar-brand strong { font-family: Georgia, "Songti SC", serif; font-size: 18px; letter-spacing: .08em; }
+.sidebar-brand small { color: #82949e; font-size: 10px; letter-spacing: .18em; }
+.side-menu { flex: 1; padding: 18px 12px; border-right: 0 !important; background: transparent !important; }
+.side-menu .el-menu-item, .side-menu .el-sub-menu__title { height: 48px; margin-bottom: 5px; border-radius: 4px; color: #aebcc3; }
+.side-menu .el-menu-item:hover, .side-menu .el-sub-menu__title:hover { background: #142c38 !important; color: #fff; }
+.side-menu .el-menu-item.is-active { background: #0f7c79 !important; color: #fff; box-shadow: 0 7px 22px rgba(4,119,113,.2); }
+.side-menu .el-menu { background: transparent; }
+.sidebar-foot { padding: 18px 24px; color: #55707d; font-size: 9px; letter-spacing: .12em; }
+.shell > .el-container { margin-left: 248px; }
+.topbar { height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: rgba(255,255,255,.9); border-bottom: 1px solid var(--line); backdrop-filter: blur(10px); }
+.topbar > div:first-child { display: flex; flex-direction: column; }
+.topbar strong { font-size: 16px; }
+.user-chip { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border: 0; background: transparent; cursor: pointer; text-align: left; }
+.user-chip > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #d8ebe8; color: #0b6a66; font-weight: 800; }
+.user-chip div { display: flex; flex-direction: column; gap: 2px; }
+.user-chip small { color: var(--muted); }
+.content { padding: 28px 30px 40px; overflow: visible; }
+.page-card { min-height: calc(100vh - 148px); padding: 26px; background: #fff; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 14px 35px rgba(26,51,62,.04); }
+.page-heading { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+.page-heading h2 { margin: 0; color: var(--ink); font-family: Georgia, "Songti SC", serif; font-size: 28px; font-weight: 600; }
+.page-heading p:last-child { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+.panel { width: 100%; }
+.panel > .el-card, .panel .el-card { border: 1px solid var(--line); border-radius: 5px; box-shadow: none; }
+.row { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.row .el-button { margin-left: auto; }
+.result { margin-top: 16px; }
+.text-actions { margin: 8px 0; text-align: right; }
+.tip, .form-help { color: #89949c; font-size: 12px; }
+.permission-tree { width: 100%; max-height: 300px; padding: 12px; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
+.permission-tree small { margin-left: 8px; color: #9aa5ab; }
+.table-secondary { display: block; margin-top: 4px; color: #8c989f; }
+.role-tag { margin: 2px 4px 2px 0; }
+.password-form { margin-top: 18px; }
+
+.login-page { min-height: 100vh; display: grid; grid-template-columns: minmax(460px, 1.25fr) minmax(460px, .75fr); background: #f4f7f6; }
+.login-visual { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 11vw; overflow: hidden; color: #fff; background: radial-gradient(circle at 28% 30%, rgba(25,142,136,.25), transparent 26%), linear-gradient(145deg,#0a212b,#102f38 58%,#0b1b24); }
+.login-visual::before { content:""; position:absolute; inset:0; opacity:.18; background-image: linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px); background-size:54px 54px; mask-image:linear-gradient(to right,#000,transparent); }
+.login-visual > * { position: relative; }
+.brand-mark { display:grid; place-items:center; width:70px; height:70px; margin-bottom:35px; border:1px solid rgba(111,231,218,.5); color:#8ee5dc; font: 36px Georgia,serif; }
+.login-visual h1 { margin: 0; font: 500 56px Georgia,"Songti SC",serif; letter-spacing:.12em; }
+.login-intro { max-width: 500px; margin: 20px 0 50px; color: #a8bbc2; font-size: 16px; line-height: 1.8; }
+.security-note { color: #78939d; font-size: 11px; letter-spacing: .14em; }
+.security-note span,.map-badge span { display:inline-block; width:7px; height:7px; margin-right:8px; border-radius:50%; background:#38d2bb; box-shadow:0 0 14px #38d2bb; }
+.login-card { align-self: center; width: 420px; margin: auto; padding: 18px 18px 12px; border: 0 !important; background: transparent !important; }
+.login-card h2 { margin: 0; font: 500 30px Georgia,"Songti SC",serif; }
+.login-card .muted { margin: 8px 0 30px; font-size: 13px; }
+.login-button { width: 100%; margin-top: 10px; background: #0f7c79; border-color: #0f7c79; }
+.login-tip { margin-top: 20px; color: #98a3a8; font-size: 11px; text-align:center; }
+
+.map-page { color:#d9f2f6; }
+.map-title { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px; color:var(--ink); }
+.map-title h2 { margin:0; font:500 28px Georgia,"Songti SC",serif; }
+.map-title p:last-child { margin:7px 0 0; color:var(--muted); font-size:13px; }
+.map-badge { color:#17837e; font-size:10px; letter-spacing:.14em; }
+.map-stage { position:relative; height:calc(100vh - 164px); min-height:620px; overflow:hidden; border:1px solid #153747; border-radius:6px; background:#06131f; box-shadow:0 24px 55px rgba(5,25,34,.18); }
+.map-canvas { position:absolute; inset:0; z-index:2; cursor:grab; }
+.map-grid { position:absolute; inset:0; opacity:.12; background-image:linear-gradient(#42a6bf 1px,transparent 1px),linear-gradient(90deg,#42a6bf 1px,transparent 1px); background-size:48px 48px; mask-image:radial-gradient(circle at center,#000,transparent 75%); }
+.map-summary { position:absolute; z-index:3; top:28px; left:28px; width:190px; padding:20px; border-left:2px solid #23afa7; background:rgba(5,25,35,.74); backdrop-filter:blur(12px); pointer-events:none; }
+.map-summary p { margin:0 0 8px; color:#71919d; font-size:10px; letter-spacing:.18em; }
+.map-summary > strong { font:500 44px Georgia,serif; color:#fff; }
+.map-summary > span { margin-left:8px; color:#7e9ca6; font-size:11px; }
+.map-summary > div { display:flex; align-items:baseline; gap:8px; margin-top:13px; padding-top:13px; border-top:1px solid rgba(255,255,255,.1); }
+.map-summary b { color:#52d4c9; font-size:18px; }.map-summary small{color:#78919a}
+.map-instructions { position:absolute; z-index:3; left:28px; bottom:24px; color:#547884; font-size:10px; letter-spacing:.12em; pointer-events:none; }
+.map-tooltip { position:absolute; z-index:5; display:flex; flex-direction:column; gap:4px; padding:10px 13px; border:1px solid rgba(75,208,221,.5); background:rgba(4,22,32,.92); pointer-events:none; }
+.map-tooltip strong { color:#fff; }.map-tooltip span{color:#7fa1aa;font-size:11px}
+.city-list { position:absolute; z-index:4; top:28px; right:28px; display:grid; width:155px; max-height:calc(100% - 56px); overflow:auto; background:rgba(5,25,35,.7); backdrop-filter:blur(10px); }
+.city-list button { display:flex; justify-content:space-between; padding:10px 13px; border:0; border-bottom:1px solid rgba(255,255,255,.06); color:#87a4ad; background:transparent; cursor:pointer; text-align:left; }
+.city-list button:hover,.city-list button.active { color:#fff; background:rgba(23,142,145,.34); }.city-list b{color:#2e8290;font:10px monospace}

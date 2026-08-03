@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ public class DocumentController {
 
     /** 列出全部缓存文档(不含全文) */
     @GetMapping
+    @PreAuthorize("@authz.has('attachment:search')")
     public List<DocumentSummary> list() {
         return repo.findAllByOrderByUpdatedAtDesc().stream()
                 .map(d -> toSummary(d, false))
@@ -34,6 +36,7 @@ public class DocumentController {
 
     /** 查看某个缓存文档(含全文) */
     @GetMapping("/{id}")
+    @PreAuthorize("@authz.has('attachment:search')")
     public DocumentSummary get(@PathVariable Long id) {
         ExtractedDocument doc = repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("文档不存在: id=" + id));

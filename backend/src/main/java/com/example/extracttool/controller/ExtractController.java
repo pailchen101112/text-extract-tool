@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ public class ExtractController {
 
     /** 按服务器本地文件路径提取文本 */
     @PostMapping("/path")
+    @PreAuthorize("@authz.has('attachment:extract')")
     public ExtractResponse extractByPath(@RequestBody ExtractRequest request,
                                          HttpServletRequest httpRequest) {
         return extractService.extractByPath(request, getClientIp(httpRequest));
@@ -31,6 +33,7 @@ public class ExtractController {
 
     /** 按上传文件流提取文本 */
     @PostMapping("/upload")
+    @PreAuthorize("@authz.has('attachment:extract')")
     public ExtractResponse extractByUpload(@RequestParam("file") MultipartFile file,
                                            @RequestParam(value = "useCache", defaultValue = "true") boolean useCache,
                                            HttpServletRequest httpRequest) {

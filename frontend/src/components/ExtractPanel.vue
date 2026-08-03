@@ -1,5 +1,7 @@
 <template>
-  <div class="panel">
+  <div>
+    <div class="page-heading"><div><p class="eyebrow">DOCUMENT WORKFLOW</p><h2>文本提取</h2><p>从受控服务器路径或上传附件中提取并缓存文本。</p></div></div>
+    <div class="panel">
     <el-row :gutter="16">
       <el-col :span="12">
         <el-card>
@@ -73,6 +75,7 @@
         readonly
       />
     </el-card>
+  </div>
   </div>
 </template>
 

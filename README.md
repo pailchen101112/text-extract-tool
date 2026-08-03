@@ -1,123 +1,97 @@
-# 文本提取与检索工具
+# 文澜智析 · 文本提取与权限管理平台
 
-基于 **Java 8 + Spring Boot + Apache Tika + MySQL** 的后端，配合 **Vue 3 + Vite + Element Plus** 前端。
+基于 Java 8、Spring Boot 2.7、MySQL 8、Vue 3、Element Plus 与 Three.js 的管理平台。项目在原文本提取与检索工具之上新增了账号安全、RBAC 权限管理、组织岗位管理和浙江省三维展示。
 
-支持：
-- 传入**服务器文件路径**或**上传文件流**提取文本（Word doc/docx、PDF、txt、html、rtf 等，基于 Tika）
-- **按文件名缓存**提取结果，并用 SHA-256 校验内容变化实现缓存命中
-- 传入**多个文本**，判断它们是否出现在某个目标文本中（目标文本可来自缓存文件或内联输入）
+## 功能
 
-## 目录结构
-
-```
-text-extract-tool/
-├── backend/          Spring Boot 后端 (Maven)
-├── frontend/         Vue3 前端 (Vite)
-├── init.sql          MySQL 建库建表脚本
-└── README.md
-```
+- 账号登录：JWT Bearer 认证、BCrypt（cost 12）、首次登录强制改密、90 天密码到期、连续 5 次失败锁定 30 分钟、30 分钟令牌有效期。
+- RBAC：用户—角色—菜单/权限点，多角色授权，后端方法级权限校验，超级管理员保护。
+- 组织管理：公司层级、岗位、用户组织归属、账号启停与解锁。
+- 附件处理：原有服务器路径提取、上传提取、缓存文档检索均归入“附件处理”子菜单。
+- 浙江省 3D：使用 Vue 3 + Three.js 渲染 11 个地级市 GeoJSON，可旋转、缩放、悬停高亮和城市聚焦。
+- 安全审计：登录、失败锁定、改密以及用户/角色/公司/岗位/菜单变更写入独立滚动日志。
 
 ## 环境要求
 
-- JDK 8
+- JDK 8（也可使用更高版本构建）
 - Maven 3.6+
 - MySQL 8
-- Node 18+ / npm
+- Node.js 20.19+ 或 22.12+
 
-## 一、数据库
+## 快速启动
 
 ```bash
-# 启动 MySQL 后(brew 安装默认 root 无密码)
 mysql -u root < init.sql
-```
 
-如你的 MySQL 有密码，修改 `backend/src/main/resources/application.yml` 中的 `username/password`。
-
-## 二、后端
-
-```bash
 cd backend
 mvn clean package
 java -jar target/extract-tool-1.0.0.jar
-# 默认端口 8080
+
+# 新终端
+cd frontend
+npm install
+npm run dev
 ```
 
-## 三、前端
+访问 `http://localhost:5173`。
+
+初始账号：`admin` / `Admin@123456`。首次登录必须修改密码。生产环境启用前，应同时替换初始密码与 JWT 密钥。
+
+```bash
+export APP_JWT_SECRET='至少32字节的高熵随机字符串'
+export APP_ALLOWED_BASE_PATHS='/data/approved-documents'
+```
+
+如 MySQL 账号不同，请修改 `backend/src/main/resources/application.yml` 或使用部署平台的配置覆盖机制。
+
+## 菜单结构
+
+```text
+附件处理
+├── 文本提取
+└── 文本检索
+浙江省 3D
+系统管理
+├── 用户管理
+├── 角色管理
+├── 公司管理
+├── 岗位管理
+└── 菜单管理
+```
+
+## 核心接口
+
+除登录外，所有 `/api/**` 接口都要求 `Authorization: Bearer <token>`。
+
+| 方法 | 路径 | 权限 |
+|---|---|---|
+| POST | `/api/auth/login` | 公开 |
+| GET | `/api/auth/me` | 已登录 |
+| PUT | `/api/auth/change-password` | 已登录 |
+| POST | `/api/extract/path`、`/api/extract/upload` | `attachment:extract` |
+| POST | `/api/search/match` | `attachment:search` |
+| GET | `/api/documents`、`/api/documents/{id}` | `attachment:search` |
+| CRUD | `/api/admin/users` | `system:user:list/write` |
+| CRUD | `/api/admin/roles` | `system:role:list/write` |
+| CRUD | `/api/admin/companies` | `system:company:list/write` |
+| CRUD | `/api/admin/positions` | `system:position:list/write` |
+| CRUD | `/api/admin/menus` | `system:menu:list/write` |
+
+## 安全与等保说明
+
+代码侧已实现身份鉴别、访问控制、失败处理、会话时限、安全审计、文件白名单/MIME 检测、路径隔离和接口限流等应用安全基线。详细控制项与上线要求见 [docs/SECURITY_BASELINE.md](docs/SECURITY_BASELINE.md)。
+
+“等保三级”是覆盖定级备案、网络与主机、应用与数据、建设管理、运维管理和测评整改的完整体系。本仓库不能单独代表系统已通过等保三级测评；部署时仍需 HTTPS、密钥托管、数据库最小权限、集中日志、防护设备、备份恢复、漏洞管理和制度流程等配套措施。
+
+## 数据与第三方组件
+
+浙江省 GeoJSON 来自 `china-map-geojson`（ISC License），以 npm 依赖随构建打包，运行时不请求外部地图服务。Three.js 页面按路由懒加载。
 
 ```bash
 cd frontend
-npm install
-npm run dev      # 开发模式, 默认端口 5173, /api 自动代理到 8080
-# 或
-npm run build    # 生产构建, 产物在 dist/
+npm audit
+npm run build
+
+cd ../backend
+mvn clean package
 ```
-
-浏览器打开 http://localhost:5173
-
-## 接口说明
-
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| POST | `/api/extract/path` | body `{ "filePath": "...", "useCache": true }` 按路径提取 |
-| POST | `/api/extract/upload` | multipart `file` + `useCache` 上传流提取 |
-| POST | `/api/search/match` | body `{ "fileName"?, "haystack"?, "needles": [], "caseSensitive": false }` 多文本命中判断 |
-| GET | `/api/documents` | 列出已缓存文档 |
-| GET | `/api/documents/{id}` | 查看某缓存文档全文 |
-
-### 缓存策略
-按 `file_name` 查表，用 `content_hash`(SHA-256) 校验：
-- 命中且 hash 一致 → 直接返回缓存（`cacheHit=true`）
-- 命中但 hash 不同 → 重新提取并更新
-- 未命中 → 提取并新增
-
-### 检索接口示例
-```bash
-curl -X POST http://localhost:8080/api/search/match \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "fileName": "test.pdf",
-    "needles": ["合同金额", "甲方签字", "不存在的词"],
-    "caseSensitive": false
-  }'
-```
-返回每个 needle 的 `found / count / firstIndex`。
-
-## 安全管控
-`/api/extract/path` 和 `/api/extract/upload` 均启用了安全校验, 全局还启用了限流与审计日志。
-
-### 1. 文件校验 (`PathSecurityService`)
-| 检查项 | 说明 | 触发拒绝时 HTTP |
-|---|---|---|
-| 绝对路径 | 路径必须以 `/` 开头, 拒绝相对路径 | 400 |
-| 文件存在 + 普通文件 | 拒绝目录、缺失文件、设备文件 | 400 |
-| 大小上限 | 默认 100MB, 可配置 | 400 |
-| 扩展名白名单 | 默认 `pdf,doc,docx,txt,html,htm,rtf,md,xls,xlsx,ppt,pptx,odt,csv,xml` | 400 |
-| **MIME 嗅探** | Apache Tika 读取文件头检测实际类型, 与扩展名不符则拒绝(防伪扩展名) | 400 |
-| 路径白名单 | 基于 canonical 路径(防 `../` 与符号链接逃逸), 文件必须位于允许根目录下 | 400 |
-
-### 2. 接口限流 (`RateLimitInterceptor` + `RateLimitService`)
-- 按客户端 IP 固定窗口(每分钟)限流, 内存实现
-- 默认 60 次/分钟, 可配置; 超限返回 **HTTP 429** + `Retry-After` 头 + JSON 错误体
-- 优先使用 `X-Forwarded-For` 头(代理场景), 否则取 `remoteAddr`
-
-### 3. 操作审计日志 (`AuditLogService`)
-- 每次文本提取操作(成功/失败)均记录一条结构化日志
-- 字段: `source`(path/upload) / `fileName` / `contentHash` / `fileSize` / `clientIp` / `result`(ok/error) / `error`
-- 持久化到 `logs/audit.log`(滚动, 按天+大小切分, gzip 压缩, 保留 30 天), 同时输出到控制台
-
-### 配置示例 (`application.yml`)
-```yaml
-app:
-  security:
-    # 允许读取的服务器根目录(绝对路径), 多个用英文逗号分隔
-    allowed-base-paths: /Users/pailchen/work/text-extract-tool
-    # 允许的文件扩展名(小写, 不含点), 逗号分隔
-    allowed-extensions: pdf,doc,docx,txt,html,htm,rtf,md,xls,xlsx,ppt,pptx,odt,csv,xml
-    # 单文件最大字节数
-    max-file-size-bytes: 104857600
-    rate-limit:
-      enabled: true
-      requests-per-minute: 60
-```
-
-如需临时禁用按路径提取, 将 `allowed-base-paths` 留空即可。

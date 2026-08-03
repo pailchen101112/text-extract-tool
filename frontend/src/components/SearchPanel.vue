@@ -1,5 +1,7 @@
 <template>
-  <div class="panel">
+  <div>
+    <div class="page-heading"><div><p class="eyebrow">DOCUMENT WORKFLOW</p><h2>文本检索</h2><p>在缓存文档或粘贴文本中批量判断关键内容。</p></div></div>
+    <div class="panel">
     <el-card>
       <template #header>目标文本来源</template>
       <el-radio-group v-model="sourceType" style="margin-bottom: 12px">
@@ -66,6 +68,7 @@
         <el-table-column label="首次位置" prop="firstIndex" width="100" />
       </el-table>
     </el-card>
+  </div>
   </div>
 </template>
 
