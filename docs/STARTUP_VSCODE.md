@@ -62,12 +62,12 @@ mysql -u root -p -e "USE text_extract_tool; SHOW TABLES;"
 在仓库根目录创建 `.env.local`。该文件已被 `.gitignore` 排除，不能提交到 Git：
 
 ```dotenv
-APP_JWT_SECRET=请替换为至少32字节的本地随机密钥
-APP_ALLOWED_BASE_PATHS=/绝对路径/text-extract-tool/sample
+APP_JWT_SECRET="请替换为至少32字节的本地随机密钥"
+APP_ALLOWED_BASE_PATHS="/绝对路径/text-extract-tool/sample"
 APP_TRUST_FORWARDED_FOR=false
-SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/text_extract_tool?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true
+SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3306/text_extract_tool?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true"
 SPRING_DATASOURCE_USERNAME=root
-SPRING_DATASOURCE_PASSWORD=你的本地MySQL密码
+SPRING_DATASOURCE_PASSWORD="你的本地MySQL密码"
 ```
 
 生成 JWT 密钥：
@@ -97,19 +97,32 @@ Windows 的 `APP_ALLOWED_BASE_PATHS` 可以使用 `C:/work/text-extract-tool/sam
 macOS / Linux：
 
 ```bash
-set -a
-source .env.local
-set +a
+while IFS='=' read -r key value || [ -n "${key}" ]; do
+  [[ "${key}" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+  value="${value%$'\r'}"
+  case "${value}" in
+    \"*\") value="${value#\"}"; value="${value%\"}" ;;
+    \'*\') value="${value#\'}"; value="${value%\'}" ;;
+  esac
+  export "${key}=${value}"
+done < .env.local
 cd backend
 mvn spring-boot:run
 ```
+
+该读取方式只解析 `KEY=VALUE`，不会把密码中的 `$()`、反引号等内容当作 Shell 命令执行。不要用 `source .env.local` 代替。
 
 Windows PowerShell：
 
 ```powershell
 Get-Content .env.local | ForEach-Object {
   if ($_ -match '^([^#][^=]*)=(.*)$') {
-    [Environment]::SetEnvironmentVariable($matches[1].Trim(), $matches[2].Trim(), 'Process')
+    $value = $matches[2].Trim()
+    if (($value.StartsWith('"') -and $value.EndsWith('"')) -or
+        ($value.StartsWith("'") -and $value.EndsWith("'"))) {
+      $value = $value.Substring(1, $value.Length - 2)
+    }
+    [Environment]::SetEnvironmentVariable($matches[1].Trim(), $value, 'Process')
   }
 }
 Set-Location backend
@@ -216,4 +229,3 @@ Get-NetTCPConnection -LocalPort 8080,5173 -ErrorAction SilentlyContinue
 ### 5173 或 8080 端口被占用
 
 结束占用进程；若修改端口，还需要同步调整 `frontend/vite.config.js` 的代理目标和后端允许来源。
-
