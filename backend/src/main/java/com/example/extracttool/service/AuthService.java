@@ -58,6 +58,7 @@ public class AuthService {
         }
         SysUser user = found.get();
         LocalDateTime now = LocalDateTime.now();
+        boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
         if (!"ENABLED".equals(user.getStatus())) {
             audit.record("LOGIN", username, clientIp, "DENIED", "disabled");
             throw new LoginFailureException("账号或密码错误");
@@ -66,7 +67,7 @@ public class AuthService {
             audit.record("LOGIN", username, clientIp, "DENIED", "locked");
             throw new LoginFailureException("账号或密码错误");
         }
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        if (!passwordMatches) {
             int attempts = (user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts()) + 1;
             user.setFailedLoginAttempts(attempts);
             if (attempts >= maxFailedAttempts) user.setLockedUntil(now.plusMinutes(lockMinutes));

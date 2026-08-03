@@ -35,6 +35,7 @@ public class AdminService {
 
     @Transactional
     public Company saveCompany(Long id, CompanyRequest request) {
+        companies.findAllForHierarchyUpdate();
         Company entity = id == null ? new Company() : company(id);
         companies.findByCode(request.getCode().trim()).filter(found -> !found.getId().equals(id)).ifPresent(found -> { throw new IllegalArgumentException("公司编码已存在"); });
         validateCompanyParent(id, request.getParentId());
@@ -79,6 +80,7 @@ public class AdminService {
 
     @Transactional
     public SysMenu saveMenu(Long id, MenuRequest request) {
+        menus.findAllForHierarchyUpdate();
         SysMenu entity = id == null ? new SysMenu() : menu(id);
         if (id != null) requirePermissionInScope(entity.getPermission());
         String requestedPermission = trimToNull(request.getPermission());
