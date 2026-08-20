@@ -438,7 +438,8 @@ const addRailway = (fromFeature, toFeature, index) => {
     new THREE.LineBasicMaterial({ color: 0x5bb3c8, transparent: true, opacity: .55 })
   )
   railwayGroup.add(sleeperLines)
-  const trainGroup = new THREE.Group()
+  //1、整体改造尝试
+  /*const trainGroup = new THREE.Group()
   const trainGlow = new THREE.Mesh(
     new THREE.PlaneGeometry(4.6, 1.15),
     new THREE.MeshBasicMaterial({ map: heatTexture, color: index % 4 === 0 ? 0xffd96a : 0x3edfff, transparent: true, opacity: .34, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
@@ -454,7 +455,62 @@ const addRailway = (fromFeature, toFeature, index) => {
   train.renderOrder = 8
   trainGroup.add(train)
   railwayGroup.add(trainGroup)
-  railParticles.push({ mesh: trainGroup, glow: trainGlow, curve, progress: (index * .091) % 1, speed: .00105 + index % 3 * .00012, offset: index * .6 })
+  railParticles.push({ mesh: trainGroup, glow: trainGlow, curve, progress: (index * .091) % 1, speed: .00105 + index % 3 * .00012, offset: index * .6 })*/
+
+
+  // 2、===== 火车逐节消失改造：拆成 4 节独立车厢 =====
+  const TRAIN_SEGMENTS = 4          // 贴图自然分为 车尾+2车厢+车头
+  const TRAIN_TOTAL_LENGTH = 3.8    // 与原火车宽度一致
+  const curveLength = curve.getLength()
+  const unitToProgress = 1 / curveLength
+  const segmentSpacing = TRAIN_TOTAL_LENGTH / TRAIN_SEGMENTS
+  const trainSegments = []
+
+  // 光晕（改为独立对象，跟随车头）
+  const trainGlow = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.2, 1.15),
+      new THREE.MeshBasicMaterial({ map: heatTexture, color: index % 4 === 0 ? 0xffd96a : 0x3edfff, transparent: true, opacity: .34, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  )
+  trainGlow.position.z = -.04
+  trainGlow.renderOrder = 7
+  railwayGroup.add(trainGlow)
+
+  // 创建 4 节车厢，每节通过 UV 裁剪显示贴图的对应等分
+  for (let i = 0; i < TRAIN_SEGMENTS; i++) {
+    const segment = new THREE.Mesh(
+        new THREE.PlaneGeometry(segmentSpacing * 0.92, .48), // 0.92 留缝掩盖接缝
+        new THREE.MeshBasicMaterial({ map: trainTexture, color: 0xffffff, transparent: true, opacity: 1, depthWrite: false, depthTest: false, side: THREE.DoubleSide })
+    )
+    // UV 裁剪：i=0 车尾，i=3 车头
+    const uvStart = i / TRAIN_SEGMENTS
+    const uvEnd = (i + 1) / TRAIN_SEGMENTS
+    const uv = segment.geometry.attributes.uv
+    uv.setXY(0, uvStart, 0)
+    uv.setXY(1, uvEnd, 0)
+    uv.setXY(2, uvStart, 1)
+    uv.setXY(3, uvEnd, 1)
+    uv.needsUpdate = true
+    segment.position.z = .04
+    segment.renderOrder = 8
+    railwayGroup.add(segment)
+    trainSegments.push({
+      mesh: segment,
+      // 车头(i=3) offset=0；越靠后 offset 越小（progress 越小）
+      progressOffset: -(TRAIN_SEGMENTS - 1 - i) * segmentSpacing * unitToProgress
+    })
+    /*结束*/
+  }
+
+  railParticles.push({
+    segments: trainSegments,
+    glow: trainGlow,
+    curve,
+    progress: (index * .091) % 1,  // progress 现在表示【车头】位置
+    speed: .00105 + index % 3 * .00012,
+    offset: index * .6
+  })
+
+
 }
 
 const disposeGroup = (group) => {
@@ -587,14 +643,62 @@ const animate = (time = 0) => {
     item.progress = (item.progress + item.speed) % 1
     item.mesh.position.copy(item.curve.getPoint(item.progress))
   })
-  railParticles.forEach((item) => {
+  //1、整体改造
+  /*railParticles.forEach((item) => {
     item.progress = (item.progress + item.speed) % 1
     const position = item.curve.getPoint(item.progress)
     const tangent = item.curve.getTangent(item.progress)
     item.mesh.position.copy(position)
     item.mesh.rotation.z = Math.atan2(tangent.y, tangent.x)
     item.glow.material.opacity = .27 + (Math.sin(time * .002 + item.offset) + 1) * .08
+  })*/
+  railParticles.forEach((item) => {
+    item.progress += item.speed
+    // 车尾也完全通过终点后，重置到起点之前，留出空窗间隔
+    const tailOffset = item.segments[0].progressOffset
+    if (item.progress + tailOffset >= 1.02) {
+      item.progress = -0.18  // 起点前 18% 曲线长度的间隔，再驶入
+    }
+
+    // 逐节更新：车头先到终点先淡出消失，后面车厢陆续消失
+    item.segments.forEach((seg) => {
+      const segProgress = item.progress + seg.progressOffset
+      if (segProgress >= 0 && segProgress < 1) {
+        seg.mesh.visible = true
+        const t = Math.max(0, Math.min(1, segProgress))
+        const position = item.curve.getPoint(t)
+        const tangent = item.curve.getTangent(t)
+        seg.mesh.position.copy(position)
+        seg.mesh.rotation.z = Math.atan2(tangent.y, tangent.x)
+        // 终点前 6% 淡出，起点前 5% 淡入
+        const fadeOutZone = 0.06
+        const fadeInZone = 0.05
+        if (segProgress > 1 - fadeOutZone) {
+          seg.mesh.material.opacity = Math.max(0, (1 - segProgress) / fadeOutZone)
+        } else if (segProgress < fadeInZone) {
+          seg.mesh.material.opacity = Math.min(1, segProgress / fadeInZone)
+        } else {
+          seg.mesh.material.opacity = 1
+        }
+      } else {
+        seg.mesh.visible = false
+      }
+    })
+
+    // 光晕跟随车头，车头消失时光晕也隐藏
+    if (item.progress >= 0 && item.progress < 1) {
+      item.glow.visible = true
+      const t = Math.max(0, Math.min(1, item.progress))
+      item.glow.position.copy(item.curve.getPoint(t))
+      item.glow.rotation.z = Math.atan2(item.curve.getTangent(t).y, item.curve.getTangent(t).x)
+      item.glow.material.opacity = .27 + (Math.sin(time * .002 + item.offset) + 1) * .08
+    } else {
+      item.glow.visible = false
+    }
   })
+/*结束*/
+
+
   updateLabels()
   if (effectGroup) effectGroup.rotation.z = Math.sin(time * .00018) * .002
   controls.update()
